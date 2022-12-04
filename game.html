@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>HTML5 igra</title>
+        <style>
+        canvas {
+            border:1px solid #000000;
+            background-color: #f1f1f1;
+        }
+        </style>
+
+        <script>
+        var myGamePiece = [];
+        var min = 1;
+        var max = 10;
+        var randNum = Math.floor(Math.random() * (max - min)) + min;
+        var score = 0;
+        function startGame() {
+            for(var i=0; i<randNum; i++){
+                var randColor = Math.round(0xffffff * Math.random()).toString(16);
+                var randx = Math.floor(Math.random() * 480);
+                var randy = Math.floor(Math.random() * 270);
+                myGamePiece[i] = new component(30, 30, "#" + randColor, randx, randy);
+            }
+            myGameArea.start();
+        }
+        var myGameArea = {
+            canvas : document.createElement("canvas"),
+            start : function() {
+                this.canvas.id = "myGameCanvas";
+                this.canvas.width = 480;
+                this.canvas.height = 270;
+                this.canvas.addEventListener("mousedown", handleMouseDown);
+                this.context = this.canvas.getContext("2d");
+                document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+                this.frameNo = 0;
+                this.interval = setInterval(updateGameArea, 20);
+        },
+        stop : function() {
+        clearInterval(this.interval);
+        },
+        clear : function() {
+            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+        }
+        function component(width, height, color, x, y, type) {
+            this.type = type;
+            this.width = width;
+            this.height = height;
+            this.speed_x = Math.random();
+            this.speed_y = Math.random();
+            this.x = x;
+            this.y = y;
+            this.update = function() {
+                ctx = myGameArea.context;
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.fillStyle = color;
+                ctx.fillRect(this.width / -2, this.height / -2, this.width, this.height);
+                ctx.restore();
+            }
+            this.newPos = function() {
+                acc = Math.floor(Math.random()) + 1;
+                if (this.x - this.width / 2 < 0)
+                    this.speed_x = this.speed_x + acc;
+                if ((this.x + this.width / 2) >= myGameArea.context.canvas.width)
+                    this.speed_x = -this.speed_x - acc;
+                if (this.y - this.height / 2 < 0)
+                    this.speed_y = -this.speed_y -acc;
+                if ((this.y + this.height / 2) >= myGameArea.context.canvas.height)
+                    this.speed_y = this.speed_y + acc;
+                    this.x += this.speed_x;
+                    this.y -= this.speed_y;
+            }
+        }
+        function updateGameArea() {
+                myGameArea.clear();
+                myGameArea.context.font = "bold 20px Verdana";
+                myGameArea.context.fillStyle = "Black"
+                myGameArea.context.fillText(score + "/" + randNum, 440, 40);
+                for(var i=0; i<myGamePiece.length; i++){
+                    myGamePiece[i].newPos();
+                    myGamePiece[i].update();
+                }
+            if(score==randNum){
+                myGameArea.context.font = "70px Verdana";
+                myGameArea.context.fillStyle = "Yellow";
+                myGameArea.context.fillText("You win!", 100, 130);
+            }
+        }
+        function handleMouseDown(e) {
+            e.preventDefault();
+            var rect = myGameArea.context.canvas.getBoundingClientRect();
+
+            var mouseX = parseInt(e.clientX-rect.left);
+            var mouseY = parseInt(e.clientY-rect.top);
+
+            for(var i=0;i<myGamePiece.length; i++){
+                var piece = myGamePiece[i];
+                if(mouseX>piece.x && mouseX<(piece.x+piece.width) && mouseY>piece.y && mouseY<(piece.y+piece.height)) {
+                    myGamePiece.splice(i, 1);
+                    score++;
+                }
+            }
+        }
+        </script>
+    </head>
+    <body onload="startGame()">
+        <h1>HTML5 igra</h1>
+    </body>
+</html>
